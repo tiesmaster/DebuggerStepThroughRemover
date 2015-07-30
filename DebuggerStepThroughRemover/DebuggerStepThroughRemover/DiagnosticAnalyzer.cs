@@ -1,7 +1,10 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace DebuggerStepThroughRemover
@@ -10,14 +13,15 @@ namespace DebuggerStepThroughRemover
     // ReSharper disable InconsistentNaming
 
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
+//    [DebuggerStepThrough]
     public class DebuggerStepThroughRemoverAnalyzer : DiagnosticAnalyzer
     {
         public const string DiagnosticId = "DebuggerStepThroughRemover";
 
-        private static readonly LocalizableString Title = "Type name contains lowercase letters";
-        private static readonly LocalizableString MessageFormat = "Type name '{0}' contains lowercase letters";
+        private static readonly LocalizableString Title = "Type is decorated with DebuggerStepThrough attribute";
+        private static readonly LocalizableString MessageFormat = "Type '{0}' is decorated with DebuggerStepThrough attribute";
         private static readonly LocalizableString Description = "";
-        private const string Category = "Naming";
+        private const string Category = "Debugging";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
@@ -26,18 +30,24 @@ namespace DebuggerStepThroughRemover
 
         public override void Initialize(AnalysisContext context)
         {
-            context.RegisterSymbolAction(AnalyzeSymbol, SymbolKind.NamedType);
+            context.RegisterSyntaxNodeAction(AnalyzeClassDeclarationSyntax, SyntaxKind.ClassDeclaration);
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context)
+        private static void AnalyzeClassDeclarationSyntax(SyntaxNodeAnalysisContext context)
         {
-            var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
-
-            if (namedTypeSymbol.Name.ToCharArray().Any(char.IsLower))
+            var classDeclarationNode = (ClassDeclarationSyntax)context.Node;
+            foreach(var attributeListSyntax in classDeclarationNode.AttributeLists)
             {
-                var diagnostic = Diagnostic.Create(Rule, namedTypeSymbol.Locations[0], namedTypeSymbol.Name);
-
-                context.ReportDiagnostic(diagnostic);
+                foreach(var attributeSyntax in attributeListSyntax.Attributes)
+                {
+                    var classContainsTargetAttribute = attributeSyntax.Name.GetText().ToString() == "DebuggerStepThrough";
+                    if (classContainsTargetAttribute)
+                    {
+                        var className = classDeclarationNode.Identifier.Text;
+                        var diagnostic = Diagnostic.Create(Rule, attributeListSyntax.GetLocation(), className);
+                        context.ReportDiagnostic(diagnostic);
+                    }
+                }
             }
         }
     }

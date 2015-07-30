@@ -11,7 +11,7 @@ namespace DebuggerStepThroughRemover.Test
     public class UnitTest : CodeFixVerifier
     {
         [TestMethod]
-        public void TestMethod1()
+        public void WithEmptySourceFile_ShouldNotFindAnything()
         {
             var test = @"";
 
@@ -19,22 +19,48 @@ namespace DebuggerStepThroughRemover.Test
         }
 
         [TestMethod]
-        public void TestMethod2()
+        public void WithImportedNameSpace_ShouldReportAttribute()
         {
             var test = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using System.Diagnostics;
 
     namespace ConsoleApplication1
     {
+        [DebuggerStepThrough]
         class TypeName
         {   
         }
     }";
+
+            var expected = new DiagnosticResult
+            {
+                Id = "DebuggerStepThroughRemover",
+                Message = $"Type 'TypeName' is decorated with DebuggerStepThrough attribute",
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+                    new[] {
+                            new DiagnosticResultLocation("Test0.cs", 6, 9)
+                        }
+            };
+
+            VerifyCSharpDiagnostic(test, expected);
+        }
+
+        [TestMethod]
+        [Ignore]
+        public void OldTest()
+        {
+            var test = @"
+    using System.Diagnostics;
+
+    namespace ConsoleApplication1
+    {
+        [DebuggerStepThrough]
+        class TypeName
+        {   
+        }
+    }";
+
             var expected = new DiagnosticResult
             {
                 Id = "DebuggerStepThroughRemover",
@@ -49,19 +75,15 @@ namespace DebuggerStepThroughRemover.Test
             VerifyCSharpDiagnostic(test, expected);
 
             var fixtest = @"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using System.Diagnostics;
 
     namespace ConsoleApplication1
     {
-        class TYPENAME
+        class TypeName
         {   
         }
     }";
+
             VerifyCSharpFix(test, fixtest);
         }
 
