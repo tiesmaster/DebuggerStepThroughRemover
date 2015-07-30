@@ -2,17 +2,14 @@
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+
 using TestHelper;
-using DebuggerStepThroughRemover;
 
 namespace DebuggerStepThroughRemover.Test
 {
     [TestClass]
     public class UnitTest : CodeFixVerifier
     {
-
-        //No diagnostics expected to show up
         [TestMethod]
         public void TestMethod1()
         {
@@ -21,7 +18,6 @@ namespace DebuggerStepThroughRemover.Test
             VerifyCSharpDiagnostic(test);
         }
 
-        //Diagnostic and CodeFix both triggered and checked for
         [TestMethod]
         public void TestMethod2()
         {
@@ -42,7 +38,7 @@ namespace DebuggerStepThroughRemover.Test
             var expected = new DiagnosticResult
             {
                 Id = "DebuggerStepThroughRemover",
-                Message = String.Format("Type name '{0}' contains lowercase letters", "TypeName"),
+                Message = $"Type name '{"TypeName"}' contains lowercase letters",
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
