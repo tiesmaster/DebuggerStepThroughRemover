@@ -22,15 +22,29 @@ namespace DebuggerStepThroughRemover.Test
         public void WithImportedNameSpace_ShouldReportAttribute()
         {
             var test = @"
-    using System.Diagnostics;
+using System.Diagnostics;
 
-    namespace ConsoleApplication1
-    {
-        [DebuggerStepThrough]
-        class TypeName
-        {   
+namespace ConsoleApplication1
+{
+    [DebuggerStepThrough]
+    class TypeName
+    {   
+    }
+}";
+
+            var expected = new DiagnosticResult
+            {
+                Id = "DebuggerStepThroughRemover",
+                Message = $"Type 'TypeName' is decorated with DebuggerStepThrough attribute",
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+                    new[] {
+                            new DiagnosticResultLocation("Test0.cs", 6, 5)
+                        }
+            };
+
+            VerifyCSharpDiagnostic(test, expected);
         }
-    }";
 
             var expected = new DiagnosticResult
             {
