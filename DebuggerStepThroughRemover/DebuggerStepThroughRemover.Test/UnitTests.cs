@@ -46,6 +46,21 @@ namespace ConsoleApplication1
             VerifyCSharpDiagnostic(test, expected);
         }
 
+        [TestMethod]
+        public void Fixer_WithImportedNameSpace_ShouldRemoveAttribute()
+        {
+            var test = @"
+using System.Diagnostics;
+
+namespace ConsoleApplication1
+{
+    [DebuggerStepThrough]
+    class TypeName
+    {   
+    }
+}";
+
+            // TODO: try to remove the analyze part
             var expected = new DiagnosticResult
             {
                 Id = "DebuggerStepThroughRemover",
@@ -53,11 +68,23 @@ namespace ConsoleApplication1
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", 6, 9)
+                            new DiagnosticResultLocation("Test0.cs", 6, 5)
                         }
             };
 
             VerifyCSharpDiagnostic(test, expected);
+
+            var fixtest = @"
+using System.Diagnostics;
+
+namespace ConsoleApplication1
+{
+    class TypeName
+    {   
+    }
+}";
+
+            VerifyCSharpFix(test, fixtest);
         }
 
         [TestMethod]
@@ -89,8 +116,6 @@ namespace ConsoleApplication1
             VerifyCSharpDiagnostic(test, expected);
 
             var fixtest = @"
-    using System.Diagnostics;
-
     namespace ConsoleApplication1
     {
         class TypeName
