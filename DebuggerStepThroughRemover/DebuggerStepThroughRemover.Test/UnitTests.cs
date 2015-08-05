@@ -19,7 +19,7 @@ namespace DebuggerStepThroughRemover.Test
         }
 
         [TestMethod]
-        public void WithImportedNameSpace_ShouldReportAttribute()
+        public void Analyzer_WithImportedNameSpace_ShouldReportAttribute()
         {
             var test = @"
 using System.Diagnostics;
