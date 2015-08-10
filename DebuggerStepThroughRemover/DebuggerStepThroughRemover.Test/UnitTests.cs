@@ -46,6 +46,8 @@ namespace ConsoleApplication1
             VerifyCSharpDiagnostic(test, expected);
         }
 
+        // TODO: also remove the namespace, when it's not being used anymore
+
         [TestMethod]
         public void Fixer_WithImportedNameSpace_ShouldRemoveAttribute()
         {
