@@ -14,7 +14,6 @@ namespace DebuggerStepThroughRemover
     // ReSharper disable InconsistentNaming
 
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-//    [DebuggerStepThrough]
     public class DebuggerStepThroughRemoverAnalyzer : DiagnosticAnalyzer
     {
         public const string DiagnosticId = "DebuggerStepThroughRemover";
