@@ -27,7 +27,7 @@ namespace DebuggerStepThroughRemover
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
 
-        private static readonly string _attributeName = nameof(DebuggerStepThroughAttribute).Replace(nameof(Attribute), string.Empty);
+        private static readonly string _targetAttributeName = nameof(DebuggerStepThroughAttribute).Replace(nameof(Attribute), string.Empty);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
@@ -43,7 +43,7 @@ namespace DebuggerStepThroughRemover
             {
                 foreach(var attributeSyntax in attributeListSyntax.Attributes)
                 {
-                    var classContainsTargetAttribute = attributeSyntax.Name.GetText().ToString().EndsWith(_attributeName);
+                    var classContainsTargetAttribute = attributeSyntax.Name.GetText().ToString().EndsWith(_targetAttributeName);
                     if (classContainsTargetAttribute)
                     {
                         var className = classDeclarationNode.Identifier.Text;
