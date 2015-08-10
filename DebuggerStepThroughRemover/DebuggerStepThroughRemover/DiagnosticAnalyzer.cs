@@ -18,15 +18,19 @@ namespace DebuggerStepThroughRemover
     {
         public const string DiagnosticId = "DebuggerStepThroughRemover";
 
-        private static readonly LocalizableString Title = "Type is decorated with DebuggerStepThrough attribute";
-        private static readonly LocalizableString MessageFormat = "Type '{0}' is decorated with DebuggerStepThrough attribute";
+        private static readonly LocalizableString Title =
+            "Type is decorated with DebuggerStepThrough attribute";
+        private static readonly LocalizableString MessageFormat =
+            "Type '{0}' is decorated with DebuggerStepThrough attribute";
         private static readonly LocalizableString Description = "";
         private const string Category = "Debugging";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
-            DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
+            DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning,
+            isEnabledByDefault: true, description: Description);
 
-        private static readonly string _debuggerStepThroughAttributeName = nameof(DebuggerStepThroughAttribute).Replace(nameof(Attribute), string.Empty);
+        private static readonly string _debuggerStepThroughAttributeName =
+            nameof(DebuggerStepThroughAttribute).Replace(nameof(Attribute), string.Empty);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
