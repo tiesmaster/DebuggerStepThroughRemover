@@ -1,26 +1,43 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using TestHelper;
+using Xunit;
 
 namespace DebuggerStepThroughRemover.Test
 {
-    [TestClass]
     public class AnalyzerTests : DiagnosticVerifier
     {
-        [TestMethod]
+        [Fact]
         public void WithEmptySourceFile_ShouldNotFindAnything()
         {
             var test = @"";
-
             VerifyCSharpDiagnostic(test);
         }
 
-        [TestMethod]
-        public void Analyzer_WithImportedNameSpace_ShouldReportAttribute()
+        [Theory]
+        [MemberData(nameof(TestData))]
+        public void Analyzer_WithTestData_ShouldReportAttribute(string test, int line, int column)
         {
-            var test = @"
+            var expected = new DiagnosticResult
+            {
+                Id = "DebuggerStepThroughRemover",
+                Message = $"Type 'TypeName' is decorated with DebuggerStepThrough attribute",
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+                    new[] {
+                            new DiagnosticResultLocation("Test0.cs", line, column)
+                        }
+            };
+            VerifyCSharpDiagnostic(test, expected);
+        }
+
+        public static TheoryData<string, int, int> TestData
+            = new TheoryData<string, int, int>
+            {
+                {
+                    // attribute with imported namespace, should not remove namespace
+                    @"
 using System.Diagnostics;
 
 namespace ConsoleApplication1
@@ -29,52 +46,20 @@ namespace ConsoleApplication1
     class TypeName
     {   
     }
-}";
-
-            var expected = new DiagnosticResult
-            {
-                Id = "DebuggerStepThroughRemover",
-                Message = $"Type 'TypeName' is decorated with DebuggerStepThrough attribute",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                            new DiagnosticResultLocation("Test0.cs", 6, 5)
-                        }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
-        }
-
-        [TestMethod]
-        public void Analyzer_WithoutImportedNameSpace_ShouldReportAttribute()
-        {
-            var test = @"
+}", 6, 5},
+                {
+                    // attribute without imported namespace, should remove full attribute 
+                    @"
 namespace ConsoleApplication1
 {
     [System.Diagnostics.DebuggerStepThrough]
     class TypeName
     {   
     }
-}";
-
-            var expected = new DiagnosticResult
-            {
-                Id = "DebuggerStepThroughRemover",
-                Message = $"Type 'TypeName' is decorated with DebuggerStepThrough attribute",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                            new DiagnosticResultLocation("Test0.cs", 4, 5)
-                        }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
-        }
-
-        [TestMethod]
-        public void Analyzer_WithTwoAttributes_ShouldReportCorrectAttribute()
-        {
-            var test = @"
+}", 4, 5},
+                {
+                    // class with two attributes, should remove correct attribute
+                    @"
 using System;
 using System.Diagnostics;
 
@@ -85,26 +70,10 @@ namespace ConsoleApplication1
     class TypeName
     {
     }
-}";
-
-            var expected = new DiagnosticResult
-            {
-                Id = "DebuggerStepThroughRemover",
-                Message = $"Type 'TypeName' is decorated with DebuggerStepThrough attribute",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                            new DiagnosticResultLocation("Test0.cs", 8, 5)
-                        }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
-        }
-
-        [TestMethod]
-        public void Analyzer_WithTwoAttributesBetweenBrackets_ShouldOnlyReportTheTargetOne()
-        {
-            var test = @"
+}", 8, 5},
+                {
+                    // class with two attributes between brackets, should keep the other attribute and brackets
+                    @"
 using System;
 using System.Diagnostics;
 
@@ -114,21 +83,7 @@ namespace ConsoleApplication1
     class TypeName
     {
     }
-}";
-
-            var expected = new DiagnosticResult
-            {
-                Id = "DebuggerStepThroughRemover",
-                Message = $"Type 'TypeName' is decorated with DebuggerStepThrough attribute",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                            new DiagnosticResultLocation("Test0.cs", 7, 16)
-                        }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
-        }
+}", 7, 16}};
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
