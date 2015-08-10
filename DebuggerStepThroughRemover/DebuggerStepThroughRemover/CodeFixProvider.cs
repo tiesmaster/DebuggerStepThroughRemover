@@ -14,7 +14,7 @@ namespace DebuggerStepThroughRemover
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(DebuggerStepThroughRemoverCodeFixProvider)), Shared]
     public class DebuggerStepThroughRemoverCodeFixProvider : CodeFixProvider
     {
-        private const string title = "Make uppercase";
+        private const string title = "Remove DebuggerStepThrough attribute";
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DebuggerStepThroughRemoverAnalyzer.DiagnosticId);
 
