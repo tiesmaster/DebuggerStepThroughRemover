@@ -45,8 +45,11 @@ namespace DebuggerStepThroughRemover
                     var classContainsTargetAttribute = attributeSyntax.Name.GetText().ToString().EndsWith(_targetAttributeName);
                     if (classContainsTargetAttribute)
                     {
+                        var diagnosticLocation = attributeListSyntax.Attributes.Count > 1
+                            ? attributeSyntax.GetLocation()
+                            : attributeListSyntax.GetLocation();
                         var className = classDeclarationNode.Identifier.Text;
-                        var diagnostic = Diagnostic.Create(Rule, attributeListSyntax.GetLocation(), className);
+                        var diagnostic = Diagnostic.Create(Rule, diagnosticLocation, className);
                         context.ReportDiagnostic(diagnostic);
                     }
                 }
