@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Diagnostics;
@@ -49,11 +50,7 @@ namespace DebuggerStepThroughRemover
         private async Task<Document> RemoveDebuggerStepThroughAttributeAsync(Document originalDocument,
             ClassDeclarationSyntax classDeclarationNode, CancellationToken cancellationToken)
         {
-            var debuggerStepThroughAttribute = classDeclarationNode
-                .DescendantNodes()
-                .OfType<AttributeSyntax>()
-                .First(IsDebuggerStepThroughAttribute);
-
+            var debuggerStepThroughAttribute = GetDebuggerStepThroughAttribute(classDeclarationNode);
             var attributeListNode = (AttributeListSyntax) debuggerStepThroughAttribute.Parent;
 
             SyntaxNode originalNode;
@@ -68,7 +65,7 @@ namespace DebuggerStepThroughRemover
             else
             {
                 originalNode = classDeclarationNode;
-                var indexToRemove = classDeclarationNode.AttributeLists.IndexOf((AttributeListSyntax)debuggerStepThroughAttribute.Parent);
+                var indexToRemove = classDeclarationNode.AttributeLists.IndexOf(attributeListNode);
                 newNode = classDeclarationNode
                     .WithAttributeLists(classDeclarationNode.AttributeLists.RemoveAt(indexToRemove));
 
@@ -77,6 +74,18 @@ namespace DebuggerStepThroughRemover
             var newRoot = root.ReplaceNode(originalNode, newNode);
 
             return originalDocument.WithSyntaxRoot(newRoot);
+        }
+
+        private static AttributeSyntax GetDebuggerStepThroughAttribute(ClassDeclarationSyntax classDeclarationNode)
+        {
+            return CreateQuery(classDeclarationNode).First();
+        }
+        private static IEnumerable<AttributeSyntax> CreateQuery(ClassDeclarationSyntax classDeclarationNode)
+        {
+            return classDeclarationNode
+                .DescendantNodes()
+                .OfType<AttributeSyntax>()
+                .Where(IsDebuggerStepThroughAttribute);
         }
 
         private static ClassDeclarationSyntax GetClassDeclarationNode(SyntaxNode root, TextSpan diagnosticSpan)
