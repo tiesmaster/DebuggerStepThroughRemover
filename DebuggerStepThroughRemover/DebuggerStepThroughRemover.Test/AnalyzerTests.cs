@@ -101,6 +101,8 @@ namespace ConsoleApplication1
             VerifyCSharpDiagnostic(test, expected);
         }
 
+        // TODO: test for [Obsolete, DebuggerStepThrough]
+
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
             return new DebuggerStepThroughRemoverAnalyzer();
