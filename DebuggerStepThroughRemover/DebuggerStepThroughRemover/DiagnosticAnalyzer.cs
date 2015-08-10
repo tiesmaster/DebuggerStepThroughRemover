@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -26,6 +27,8 @@ namespace DebuggerStepThroughRemover
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
             DiagnosticId, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
 
+        private static readonly string _attributeName = nameof(DebuggerStepThroughAttribute).Replace(nameof(Attribute), string.Empty);
+
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
@@ -40,7 +43,7 @@ namespace DebuggerStepThroughRemover
             {
                 foreach(var attributeSyntax in attributeListSyntax.Attributes)
                 {
-                    var classContainsTargetAttribute = attributeSyntax.Name.GetText().ToString() == "DebuggerStepThrough";
+                    var classContainsTargetAttribute = attributeSyntax.Name.GetText().ToString().EndsWith(_attributeName);
                     if (classContainsTargetAttribute)
                     {
                         var className = classDeclarationNode.Identifier.Text;
