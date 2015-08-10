@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -38,15 +39,18 @@ namespace DebuggerStepThroughRemover
         {
             var classDeclarationNode = (ClassDeclarationSyntax)context.Node;
 
-            var query = classDeclarationNode
+            foreach (var debuggerStepThroughAttribute in CreateQuery(classDeclarationNode))
+            {
+                ReportDiagnostic(context, debuggerStepThroughAttribute);
+            }
+        }
+
+        private static IEnumerable<AttributeSyntax> CreateQuery(ClassDeclarationSyntax classDeclarationNode)
+        {
+            return classDeclarationNode
                 .DescendantNodes()
                 .OfType<AttributeSyntax>()
                 .Where(IsDebuggerStepThroughAttribute);
-
-            foreach (var targetAttributeNode in query)
-            {
-                ReportDiagnostic(context, targetAttributeNode);
-            }
         }
 
         private static bool IsDebuggerStepThroughAttribute(AttributeSyntax attributeNode)
