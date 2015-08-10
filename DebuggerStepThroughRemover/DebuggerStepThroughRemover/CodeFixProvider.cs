@@ -1,5 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Immutable;
 using System.Composition;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +23,9 @@ namespace DebuggerStepThroughRemover
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds =>
             ImmutableArray.Create(DebuggerStepThroughRemoverAnalyzer.DiagnosticId);
+
+        private static readonly string _debuggerStepThroughAttributeName =
+            nameof(DebuggerStepThroughAttribute).Replace(nameof(Attribute), string.Empty);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
@@ -44,10 +49,10 @@ namespace DebuggerStepThroughRemover
         private async Task<Document> RemoveDebuggerStepThroughAttributeAsync(Document originalDocument,
             ClassDeclarationSyntax classDeclarationNode, CancellationToken cancellationToken)
         {
-            var debuggerStepThroughAttribute =
-                classDeclarationNode.DescendantNodes()
-                    .OfType<AttributeSyntax>()
-                    .First(a => a.GetText().ToString() == "DebuggerStepThrough");
+            var debuggerStepThroughAttribute = classDeclarationNode
+                .DescendantNodes()
+                .OfType<AttributeSyntax>()
+                .First(IsDebuggerStepThroughAttribute);
 
             var indexToRemove = classDeclarationNode.AttributeLists.IndexOf((AttributeListSyntax)debuggerStepThroughAttribute.Parent);
             var newClassDeclarationNode = classDeclarationNode
@@ -64,5 +69,9 @@ namespace DebuggerStepThroughRemover
             var tokenPointedToByDiagnostic = root.FindToken(diagnosticSpan.Start);
             return tokenPointedToByDiagnostic.Parent.AncestorsAndSelf().OfType<ClassDeclarationSyntax>().First();
         }
+
+        private static bool IsDebuggerStepThroughAttribute(AttributeSyntax attributeNode) =>
+            attributeNode.Name.GetText().ToString().EndsWith(_debuggerStepThroughAttributeName);
+
     }
 }
