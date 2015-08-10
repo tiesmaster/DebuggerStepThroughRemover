@@ -11,6 +11,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace DebuggerStepThroughRemover
 {
+    // ReSharper disable InconsistentNaming
+
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(DebuggerStepThroughRemoverCodeFixProvider)), Shared]
     public class DebuggerStepThroughRemoverCodeFixProvider : CodeFixProvider
     {
