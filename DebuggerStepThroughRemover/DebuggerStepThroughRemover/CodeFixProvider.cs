@@ -56,28 +56,27 @@ namespace DebuggerStepThroughRemover
 
             var attributeListNode = (AttributeListSyntax) debuggerStepThroughAttribute.Parent;
 
+            SyntaxNode originalNode;
+            SyntaxNode newNode;
             if (attributeListNode.Attributes.Count > 1)
             {
+                originalNode = attributeListNode;
                 var indexToRemove = attributeListNode.Attributes.IndexOf(debuggerStepThroughAttribute);
-                var newAttributeListNode = attributeListNode.WithAttributes(
+                newNode = attributeListNode.WithAttributes(
                     attributeListNode.Attributes.RemoveAt(indexToRemove));
-
-                var root = await originalDocument.GetSyntaxRootAsync(cancellationToken);
-                var newRoot = root.ReplaceNode(attributeListNode, newAttributeListNode);
-
-                return originalDocument.WithSyntaxRoot(newRoot);
             }
             else
             {
+                originalNode = classDeclarationNode;
                 var indexToRemove = classDeclarationNode.AttributeLists.IndexOf((AttributeListSyntax)debuggerStepThroughAttribute.Parent);
-                var newClassDeclarationNode = classDeclarationNode
+                newNode = classDeclarationNode
                     .WithAttributeLists(classDeclarationNode.AttributeLists.RemoveAt(indexToRemove));
 
-                var root = await originalDocument.GetSyntaxRootAsync(cancellationToken);
-                var newRoot = root.ReplaceNode(classDeclarationNode, newClassDeclarationNode);
-
-                return originalDocument.WithSyntaxRoot(newRoot);
             }
+            var root = await originalDocument.GetSyntaxRootAsync(cancellationToken);
+            var newRoot = root.ReplaceNode(originalNode, newNode);
+
+            return originalDocument.WithSyntaxRoot(newRoot);
         }
 
         private static ClassDeclarationSyntax GetClassDeclarationNode(SyntaxNode root, TextSpan diagnosticSpan)
