@@ -67,11 +67,9 @@ namespace DebuggerStepThroughRemover
             AttributeListSyntax attributeListNodeOfDebuggerStepThroughAttribute, ClassDeclarationSyntax classDeclarationNode,
             CancellationToken cancellationToken)
         {
-            var indexToRemove = classDeclarationNode.AttributeLists.IndexOf(attributeListNodeOfDebuggerStepThroughAttribute);
-
             var oldNode = classDeclarationNode;
             var newNode = classDeclarationNode.WithAttributeLists(
-                classDeclarationNode.AttributeLists.RemoveAt(indexToRemove));
+                classDeclarationNode.AttributeLists.Remove(attributeListNodeOfDebuggerStepThroughAttribute));
 
             return CreateNewDocumentWithNewNodeAsync(originalDocument, oldNode, newNode, cancellationToken);
         }
@@ -80,11 +78,9 @@ namespace DebuggerStepThroughRemover
             AttributeSyntax attributeNode, AttributeListSyntax parentAttributeListNode,
             CancellationToken cancellationToken)
         {
-            var indexToRemove = parentAttributeListNode.Attributes.IndexOf(attributeNode);
-
             var oldNode = parentAttributeListNode;
             var newNode = parentAttributeListNode.WithAttributes(
-                parentAttributeListNode.Attributes.RemoveAt(indexToRemove));
+                parentAttributeListNode.Attributes.Remove(attributeNode));
 
             return CreateNewDocumentWithNewNodeAsync(originalDocument, oldNode, newNode, cancellationToken);
         }
