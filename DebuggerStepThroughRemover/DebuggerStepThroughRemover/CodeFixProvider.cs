@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 namespace DebuggerStepThroughRemover
 {
@@ -18,7 +19,8 @@ namespace DebuggerStepThroughRemover
     {
         private const string title = "Remove DebuggerStepThrough attribute";
 
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DebuggerStepThroughRemoverAnalyzer.DiagnosticId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds =>
+            ImmutableArray.Create(DebuggerStepThroughRemoverAnalyzer.DiagnosticId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
@@ -28,35 +30,39 @@ namespace DebuggerStepThroughRemover
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-
             var diagnostic = context.Diagnostics.First();
-            var diagnosticSpan = diagnostic.Location.SourceSpan;
-
-            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<ClassDeclarationSyntax>().First();
+            var classDeclarationNode = GetClassDeclarationNode(root, diagnostic.Location.SourceSpan);
 
             context.RegisterCodeFix(
                 CodeAction.Create(
                     title: title,
-                    createChangedDocument: c => RemoveDebuggerStepThroughAttributeAsync(context.Document, declaration, c),
+                    createChangedDocument: c => RemoveDebuggerStepThroughAttributeAsync(context.Document, classDeclarationNode, c),
                     equivalenceKey: title),
                 diagnostic);
         }
 
-        private async Task<Document> RemoveDebuggerStepThroughAttributeAsync(Document document, ClassDeclarationSyntax classDeclarationSyntax, CancellationToken cancellationToken)
+        private async Task<Document> RemoveDebuggerStepThroughAttributeAsync(Document originalDocument,
+            ClassDeclarationSyntax classDeclarationNode, CancellationToken cancellationToken)
         {
-            var attributeSyntax =
-                classDeclarationSyntax.DescendantNodes()
-                                      .OfType<AttributeSyntax>()
-                                      .First(a => a.GetText().ToString() == "DebuggerStepThrough");
+            var debuggerStepThroughAttribute =
+                classDeclarationNode.DescendantNodes()
+                    .OfType<AttributeSyntax>()
+                    .First(a => a.GetText().ToString() == "DebuggerStepThrough");
 
-            var attributeIndex = classDeclarationSyntax.AttributeLists.IndexOf((AttributeListSyntax)attributeSyntax.Parent);
-            var newclassDeclarationSyntax = classDeclarationSyntax
-                .WithAttributeLists(classDeclarationSyntax.AttributeLists.RemoveAt(attributeIndex));
+            var indexToRemove = classDeclarationNode.AttributeLists.IndexOf((AttributeListSyntax)debuggerStepThroughAttribute.Parent);
+            var newClassDeclarationNode = classDeclarationNode
+                .WithAttributeLists(classDeclarationNode.AttributeLists.RemoveAt(indexToRemove));
 
-            var root = await document.GetSyntaxRootAsync(cancellationToken);
-            var newRoot = root.ReplaceNode(classDeclarationSyntax, newclassDeclarationSyntax);
+            var root = await originalDocument.GetSyntaxRootAsync(cancellationToken);
+            var newRoot = root.ReplaceNode(classDeclarationNode, newClassDeclarationNode);
 
-            return document.WithSyntaxRoot(newRoot);
+            return originalDocument.WithSyntaxRoot(newRoot);
+        }
+
+        private static ClassDeclarationSyntax GetClassDeclarationNode(SyntaxNode root, TextSpan diagnosticSpan)
+        {
+            var tokenPointedToByDiagnostic = root.FindToken(diagnosticSpan.Start);
+            return tokenPointedToByDiagnostic.Parent.AncestorsAndSelf().OfType<ClassDeclarationSyntax>().First();
         }
     }
 }
