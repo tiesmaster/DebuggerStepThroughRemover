@@ -57,10 +57,8 @@ namespace DebuggerStepThroughRemover
                 .Where(IsDebuggerStepThroughAttribute);
         }
 
-        private static bool IsDebuggerStepThroughAttribute(AttributeSyntax attributeNode)
-        {
-            return attributeNode.Name.GetText().ToString().EndsWith(_debuggerStepThroughAttributeName);
-        }
+        private static bool IsDebuggerStepThroughAttribute(AttributeSyntax attributeNode) =>
+            attributeNode.Name.GetText().ToString().EndsWith(_debuggerStepThroughAttributeName);
 
         private static void ReportDiagnostic(SyntaxNodeAnalysisContext context, AttributeSyntax attributeSyntax)
         {
