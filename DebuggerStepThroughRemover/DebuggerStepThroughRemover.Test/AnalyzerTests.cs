@@ -101,7 +101,34 @@ namespace ConsoleApplication1
             VerifyCSharpDiagnostic(test, expected);
         }
 
-        // TODO: test for [Obsolete, DebuggerStepThrough]
+        [TestMethod]
+        public void Analyzer_WithTwoAttributesBetweenBrackets_ShouldOnlyReportTheTargetOne()
+        {
+            var test = @"
+using System;
+using System.Diagnostics;
+
+namespace ConsoleApplication1
+{
+    [Obsolete, DebuggerStepThrough]
+    class TypeName
+    {
+    }
+}";
+
+            var expected = new DiagnosticResult
+            {
+                Id = "DebuggerStepThroughRemover",
+                Message = $"Type 'TypeName' is decorated with DebuggerStepThrough attribute",
+                Severity = DiagnosticSeverity.Warning,
+                Locations =
+                    new[] {
+                            new DiagnosticResultLocation("Test0.cs", 7, 16)
+                        }
+            };
+
+            VerifyCSharpDiagnostic(test, expected);
+        }
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
