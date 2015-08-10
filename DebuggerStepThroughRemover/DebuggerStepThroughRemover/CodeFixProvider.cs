@@ -47,31 +47,53 @@ namespace DebuggerStepThroughRemover
                 diagnostic);
         }
 
-        private async Task<Document> RemoveDebuggerStepThroughAttributeAsync(Document originalDocument,
+        private Task<Document> RemoveDebuggerStepThroughAttributeAsync(Document originalDocument,
             ClassDeclarationSyntax classDeclarationNode, CancellationToken cancellationToken)
         {
             var debuggerStepThroughAttribute = GetDebuggerStepThroughAttribute(classDeclarationNode);
-            var attributeListNode = (AttributeListSyntax) debuggerStepThroughAttribute.Parent;
+            var attributeListNodeOfDebuggerStepThroughAttribute = (AttributeListSyntax) debuggerStepThroughAttribute.Parent;
 
-            SyntaxNode originalNode;
-            SyntaxNode newNode;
-            if (attributeListNode.Attributes.Count > 1)
+            if (attributeListNodeOfDebuggerStepThroughAttribute.Attributes.Count > 1)
             {
-                originalNode = attributeListNode;
-                var indexToRemove = attributeListNode.Attributes.IndexOf(debuggerStepThroughAttribute);
-                newNode = attributeListNode.WithAttributes(
-                    attributeListNode.Attributes.RemoveAt(indexToRemove));
+                return RemoveAttributeFromAttributeListAsync(originalDocument, debuggerStepThroughAttribute,
+                    attributeListNodeOfDebuggerStepThroughAttribute, cancellationToken);
             }
-            else
-            {
-                originalNode = classDeclarationNode;
-                var indexToRemove = classDeclarationNode.AttributeLists.IndexOf(attributeListNode);
-                newNode = classDeclarationNode
-                    .WithAttributeLists(classDeclarationNode.AttributeLists.RemoveAt(indexToRemove));
 
-            }
+            return RemoveAttributeListFromClassDeclarationAsync(originalDocument, attributeListNodeOfDebuggerStepThroughAttribute,
+                classDeclarationNode, cancellationToken);
+        }
+
+        private static Task<Document> RemoveAttributeListFromClassDeclarationAsync(Document originalDocument,
+            AttributeListSyntax attributeListNodeOfDebuggerStepThroughAttribute, ClassDeclarationSyntax classDeclarationNode,
+            CancellationToken cancellationToken)
+        {
+            var indexToRemove = classDeclarationNode.AttributeLists.IndexOf(attributeListNodeOfDebuggerStepThroughAttribute);
+
+            var oldNode = classDeclarationNode;
+            var newNode = classDeclarationNode.WithAttributeLists(
+                classDeclarationNode.AttributeLists.RemoveAt(indexToRemove));
+
+            return CreateNewDocumentWithNewNodeAsync(originalDocument, oldNode, newNode, cancellationToken);
+        }
+
+        private static Task<Document> RemoveAttributeFromAttributeListAsync(Document originalDocument,
+            AttributeSyntax attributeNode, AttributeListSyntax parentAttributeListNode,
+            CancellationToken cancellationToken)
+        {
+            var indexToRemove = parentAttributeListNode.Attributes.IndexOf(attributeNode);
+
+            var oldNode = parentAttributeListNode;
+            var newNode = parentAttributeListNode.WithAttributes(
+                parentAttributeListNode.Attributes.RemoveAt(indexToRemove));
+
+            return CreateNewDocumentWithNewNodeAsync(originalDocument, oldNode, newNode, cancellationToken);
+        }
+
+        private static async Task<Document> CreateNewDocumentWithNewNodeAsync(Document originalDocument,
+            SyntaxNode oldNode, SyntaxNode newNode, CancellationToken cancellationToken)
+        {
             var root = await originalDocument.GetSyntaxRootAsync(cancellationToken);
-            var newRoot = root.ReplaceNode(originalNode, newNode);
+            var newRoot = root.ReplaceNode(oldNode, newNode);
 
             return originalDocument.WithSyntaxRoot(newRoot);
         }
@@ -80,6 +102,7 @@ namespace DebuggerStepThroughRemover
         {
             return CreateQuery(classDeclarationNode).First();
         }
+
         private static IEnumerable<AttributeSyntax> CreateQuery(ClassDeclarationSyntax classDeclarationNode)
         {
             return classDeclarationNode
