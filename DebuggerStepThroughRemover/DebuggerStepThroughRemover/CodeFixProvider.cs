@@ -54,14 +54,30 @@ namespace DebuggerStepThroughRemover
                 .OfType<AttributeSyntax>()
                 .First(IsDebuggerStepThroughAttribute);
 
-            var indexToRemove = classDeclarationNode.AttributeLists.IndexOf((AttributeListSyntax)debuggerStepThroughAttribute.Parent);
-            var newClassDeclarationNode = classDeclarationNode
-                .WithAttributeLists(classDeclarationNode.AttributeLists.RemoveAt(indexToRemove));
+            var attributeListNode = (AttributeListSyntax) debuggerStepThroughAttribute.Parent;
 
-            var root = await originalDocument.GetSyntaxRootAsync(cancellationToken);
-            var newRoot = root.ReplaceNode(classDeclarationNode, newClassDeclarationNode);
+            if (attributeListNode.Attributes.Count > 1)
+            {
+                var indexToRemove = attributeListNode.Attributes.IndexOf(debuggerStepThroughAttribute);
+                var newAttributeListNode = attributeListNode.WithAttributes(
+                    attributeListNode.Attributes.RemoveAt(indexToRemove));
 
-            return originalDocument.WithSyntaxRoot(newRoot);
+                var root = await originalDocument.GetSyntaxRootAsync(cancellationToken);
+                var newRoot = root.ReplaceNode(attributeListNode, newAttributeListNode);
+
+                return originalDocument.WithSyntaxRoot(newRoot);
+            }
+            else
+            {
+                var indexToRemove = classDeclarationNode.AttributeLists.IndexOf((AttributeListSyntax)debuggerStepThroughAttribute.Parent);
+                var newClassDeclarationNode = classDeclarationNode
+                    .WithAttributeLists(classDeclarationNode.AttributeLists.RemoveAt(indexToRemove));
+
+                var root = await originalDocument.GetSyntaxRootAsync(cancellationToken);
+                var newRoot = root.ReplaceNode(classDeclarationNode, newClassDeclarationNode);
+
+                return originalDocument.WithSyntaxRoot(newRoot);
+            }
         }
 
         private static ClassDeclarationSyntax GetClassDeclarationNode(SyntaxNode root, TextSpan diagnosticSpan)
