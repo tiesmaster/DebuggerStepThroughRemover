@@ -60,20 +60,6 @@ namespace ConsoleApplication1
     }
 }";
 
-            // TODO: try to remove the analyze part
-            var expected = new DiagnosticResult
-            {
-                Id = "DebuggerStepThroughRemover",
-                Message = $"Type 'TypeName' is decorated with DebuggerStepThrough attribute",
-                Severity = DiagnosticSeverity.Warning,
-                Locations =
-                    new[] {
-                            new DiagnosticResultLocation("Test0.cs", 6, 5)
-                        }
-            };
-
-            VerifyCSharpDiagnostic(test, expected);
-
             var fixtest = @"
 using System.Diagnostics;
 
