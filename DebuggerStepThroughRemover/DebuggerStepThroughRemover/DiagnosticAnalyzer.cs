@@ -2,7 +2,6 @@ using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -38,16 +37,15 @@ namespace DebuggerStepThroughRemover
         private static void AnalyzeClassDeclarationSyntax(SyntaxNodeAnalysisContext context)
         {
             var classDeclarationNode = (ClassDeclarationSyntax)context.Node;
-            foreach(var attributeListSyntax in classDeclarationNode.AttributeLists)
+            var query =
+                from attributeListSyntax in classDeclarationNode.AttributeLists
+                from attributeNode in attributeListSyntax.Attributes
+                where attributeNode.Name.GetText().ToString().EndsWith(_targetAttributeName)
+                select attributeNode;
+
+            foreach (var targetAttributeNode in query)
             {
-                foreach(var attributeSyntax in attributeListSyntax.Attributes)
-                {
-                    var classContainsTargetAttribute = attributeSyntax.Name.GetText().ToString().EndsWith(_targetAttributeName);
-                    if (classContainsTargetAttribute)
-                    {
-                        ReportDiagnostic(context, attributeSyntax);
-                    }
-                }
+                ReportDiagnostic(context, targetAttributeNode);
             }
         }
 
