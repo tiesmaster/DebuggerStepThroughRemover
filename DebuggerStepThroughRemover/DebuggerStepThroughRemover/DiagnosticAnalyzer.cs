@@ -45,15 +45,32 @@ namespace DebuggerStepThroughRemover
                     var classContainsTargetAttribute = attributeSyntax.Name.GetText().ToString().EndsWith(_targetAttributeName);
                     if (classContainsTargetAttribute)
                     {
-                        var diagnosticLocation = attributeListSyntax.Attributes.Count > 1
-                            ? attributeSyntax.GetLocation()
-                            : attributeListSyntax.GetLocation();
-                        var className = classDeclarationNode.Identifier.Text;
-                        var diagnostic = Diagnostic.Create(Rule, diagnosticLocation, className);
-                        context.ReportDiagnostic(diagnostic);
+                        ReportDiagnostic(context, attributeSyntax);
                     }
                 }
             }
+        }
+
+        private static void ReportDiagnostic(SyntaxNodeAnalysisContext context, AttributeSyntax attributeSyntax)
+        {
+            context.ReportDiagnostic(
+                Diagnostic.Create(Rule,
+                    DetermineDiagnosticTarget(attributeSyntax).GetLocation(),
+                    GetClassName(attributeSyntax)));
+        }
+
+        private static string GetClassName(AttributeSyntax attributeSyntax)
+        {
+            var classNode = attributeSyntax.Ancestors().OfType<ClassDeclarationSyntax>().Single();
+            return classNode.Identifier.Text;
+        }
+
+        private static CSharpSyntaxNode DetermineDiagnosticTarget(AttributeSyntax attributeNode)
+        {
+            var attributesParentNode = (AttributeListSyntax)attributeNode.Parent;
+            return attributesParentNode.Attributes.Count > 1
+                ? (CSharpSyntaxNode) attributeNode
+                : attributesParentNode;
         }
     }
 }
