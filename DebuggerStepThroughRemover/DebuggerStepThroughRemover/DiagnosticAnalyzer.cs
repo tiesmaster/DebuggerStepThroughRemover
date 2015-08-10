@@ -37,11 +37,11 @@ namespace DebuggerStepThroughRemover
         private static void AnalyzeClassDeclarationSyntax(SyntaxNodeAnalysisContext context)
         {
             var classDeclarationNode = (ClassDeclarationSyntax)context.Node;
-            var query =
-                from attributeListSyntax in classDeclarationNode.AttributeLists
-                from attributeNode in attributeListSyntax.Attributes
-                where IsDebuggerStepThroughAttribute(attributeNode)
-                select attributeNode;
+
+            var query = classDeclarationNode
+                .DescendantNodes()
+                .OfType<AttributeSyntax>()
+                .Where(IsDebuggerStepThroughAttribute);
 
             foreach (var targetAttributeNode in query)
             {
