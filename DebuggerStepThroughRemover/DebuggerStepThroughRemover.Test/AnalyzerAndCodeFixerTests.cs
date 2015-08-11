@@ -7,8 +7,7 @@ using Xunit;
 
 namespace DebuggerStepThroughRemover.Test
 {
-    // TODO: rename accordingly
-    public class AnalyzerTests : CodeFixVerifier
+    public class AnalyzerAndCodeFixerTests : CodeFixVerifier
     {
         [Fact]
         public void WithEmptySourceFile_ShouldNotFindAnything()
