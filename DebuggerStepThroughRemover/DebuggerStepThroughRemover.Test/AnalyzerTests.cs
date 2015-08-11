@@ -42,6 +42,7 @@ namespace DebuggerStepThroughRemover.Test
             VerifyCSharpFix(brokenSource, fixedSource, null, allowNewCompilerDiagnostics: true);
         }
 
+        // TODO: encapsulate the test data, so we have normal tests in the test runner displays
         public static TheoryData<string, string, int, int> TestData
             = new TheoryData<string, string, int, int>
             {
