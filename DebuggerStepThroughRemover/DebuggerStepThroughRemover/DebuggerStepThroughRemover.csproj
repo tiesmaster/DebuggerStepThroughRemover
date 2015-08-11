@@ -102,7 +102,7 @@
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\v4.6\Microsoft.Portable.CSharp.targets" />
-  <Target Name="AfterBuild">
+  <Target Name="AfterBuild" Condition="'$(NCrunch)' != '1'">
     <GetAssemblyIdentity AssemblyFiles="$(OutDir)\$(AssemblyName).dll">
       <Output TaskParameter="Assemblies" ItemName="DebuggerStepThroughRemoverAssemblyInfo" />
     </GetAssemblyIdentity>
