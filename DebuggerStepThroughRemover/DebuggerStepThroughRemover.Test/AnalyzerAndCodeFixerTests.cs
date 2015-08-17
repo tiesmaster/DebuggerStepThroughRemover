@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 using TestHelper;
+
 using Xunit;
 
 namespace DebuggerStepThroughRemover.Test
@@ -18,7 +19,7 @@ namespace DebuggerStepThroughRemover.Test
 
         [Theory]
         [MemberData(nameof(TestData))]
-        public void Analyzer_WithTestData_ShouldReportAttribute(string brokenSource, string fixedSource, int line, int column)
+        public void Analyzer_WithTestData_ShouldReportAttribute(TestData testData)
         {
             var expected = new DiagnosticResult
             {
@@ -27,27 +28,27 @@ namespace DebuggerStepThroughRemover.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", line, column)
+                            new DiagnosticResultLocation("Test0.cs", testData.Line, testData.Column)
                         }
             };
-            VerifyCSharpDiagnostic(brokenSource, expected);
+            VerifyCSharpDiagnostic(testData.BrokenSource, expected);
         }
 
         [Theory]
         [MemberData(nameof(TestData))]
-        public void CodeFixer_WithTestData_ShouldFixSource(string brokenSource, string fixedSource, int line, int column)
+        public void CodeFixer_WithTestData_ShouldFixSource(TestData testData)
         {
             // TODO: post SO question how to handle this
-            VerifyCSharpFix(brokenSource, fixedSource, null, allowNewCompilerDiagnostics: true);
+            VerifyCSharpFix(testData.BrokenSource, testData.ExpectedFixedSource, null, allowNewCompilerDiagnostics: true);
         }
 
-        // TODO: encapsulate the test data, so we have normal tests in the test runner displays
-        public static TheoryData<string, string, int, int> TestData
-            = new TheoryData<string, string, int, int>
+        // ReSharper disable once MemberCanBePrivate.Global
+        public static readonly TheoryData<TestData> TestData
+            = new TheoryData<TestData>
             {
-                {
-                    // attribute with imported namespace, should not remove namespace
-                    @"
+                new TestData {
+                    Description = "attribute with imported namespace, should not remove namespace",
+                    BrokenSource =  @"
 using System.Diagnostics;
 
 namespace ConsoleApplication1
@@ -57,7 +58,7 @@ namespace ConsoleApplication1
     {   
     }
 }",
-                    @"
+                    ExpectedFixedSource = @"
 using System.Diagnostics;
 
 namespace ConsoleApplication1
@@ -65,10 +66,10 @@ namespace ConsoleApplication1
     class TypeName
     {   
     }
-}", 6, 5},
-                {
-                    // attribute without imported namespace, should remove full attribute 
-                    @"
+}", Line = 6, Column = 5},
+                new TestData {
+                    Description = "attribute without imported namespace, should remove full attribute",
+                    BrokenSource = @"
 namespace ConsoleApplication1
 {
     [System.Diagnostics.DebuggerStepThrough]
@@ -76,16 +77,16 @@ namespace ConsoleApplication1
     {   
     }
 }",
-                    @"
+                    ExpectedFixedSource = @"
 namespace ConsoleApplication1
 {
     class TypeName
     {   
     }
-}", 4, 5},
-                {
-                    // class with two attributes, should remove correct attribute
-                    @"
+}", Line = 4, Column = 5},
+                new TestData {
+                    Description =  "class with two attributes, should remove correct attribute",
+                    BrokenSource = @"
 using System;
 using System.Diagnostics;
 
@@ -97,7 +98,7 @@ namespace ConsoleApplication1
     {
     }
 }",
-                    @"
+                    ExpectedFixedSource = @"
 using System;
 using System.Diagnostics;
 
@@ -107,10 +108,10 @@ namespace ConsoleApplication1
     class TypeName
     {
     }
-}", 8, 5},
-                {
-                    // class with two attributes between brackets, should keep the other attribute and brackets
-                    @"
+}", Line = 8, Column = 5},
+                new TestData {
+                    Description =  "class with two attributes between brackets, should keep the other attribute and brackets",
+                    BrokenSource = @"
 using System;
 using System.Diagnostics;
 
@@ -121,7 +122,7 @@ namespace ConsoleApplication1
     {
     }
 }",
-                    @"
+                    ExpectedFixedSource = @"
 using System;
 using System.Diagnostics;
 
@@ -131,7 +132,7 @@ namespace ConsoleApplication1
     class TypeName
     {
     }
-}", 7, 16}};
+}", Line = 7, Column = 16}};
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
