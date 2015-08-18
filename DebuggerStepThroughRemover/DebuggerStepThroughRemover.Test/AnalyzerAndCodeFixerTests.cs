@@ -39,7 +39,6 @@ namespace DebuggerStepThroughRemover.Test
         [MemberData(nameof(TestData))]
         public void CodeFixer_WithTestData_ShouldFixSource(TestData testData)
         {
-            // TODO: post SO question how to handle this
             VerifyCSharpFix(testData.BrokenSource, testData.ExpectedFixedSource, null, allowNewCompilerDiagnostics: true);
         }
 
