@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
-
+using Microsoft.CodeAnalysis.Text;
 using TestHelper;
 
 using Xunit;
@@ -21,6 +21,7 @@ namespace DebuggerStepThroughRemover.Test
         [MemberData(nameof(TestData))]
         public void Analyzer_WithTestData_ShouldReportAttribute(TestData testData)
         {
+            var expectedLocation = testData.ExpectedDiagnositicLocation;
             var expected = new DiagnosticResult
             {
                 Id = "DebuggerStepThroughRemover",
@@ -28,7 +29,7 @@ namespace DebuggerStepThroughRemover.Test
                 Severity = DiagnosticSeverity.Warning,
                 Locations =
                     new[] {
-                            new DiagnosticResultLocation("Test0.cs", testData.Line, testData.Column)
+                            new DiagnosticResultLocation("Test0.cs", expectedLocation.Line, expectedLocation.Character)
                         }
             };
             VerifyCSharpDiagnostic(testData.BrokenSource, expected);
@@ -66,7 +67,7 @@ namespace ConsoleApplication1
     class TypeName
     {   
     }
-}", Line = 6, Column = 5},
+}", ExpectedDiagnositicLocation = new LinePosition(6, 5)},
                 new TestData {
                     Description = "attribute without imported namespace, should remove full attribute",
                     BrokenSource = @"
@@ -83,7 +84,7 @@ namespace ConsoleApplication1
     class TypeName
     {   
     }
-}", Line = 4, Column = 5},
+}", ExpectedDiagnositicLocation = new LinePosition(4, 5)},
                 new TestData {
                     Description =  "class with two attributes, should remove correct attribute",
                     BrokenSource = @"
@@ -108,7 +109,7 @@ namespace ConsoleApplication1
     class TypeName
     {
     }
-}", Line = 8, Column = 5},
+}", ExpectedDiagnositicLocation = new LinePosition(8, 5)},
                 new TestData {
                     Description =  "class with two attributes between brackets, should keep the other attribute and brackets",
                     BrokenSource = @"
@@ -132,7 +133,7 @@ namespace ConsoleApplication1
     class TypeName
     {
     }
-}", Line = 7, Column = 16}};
+}", ExpectedDiagnositicLocation = new LinePosition(7, 16)}};
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
