@@ -5,7 +5,7 @@
     <DisplayName>DebuggerStepThroughRemover.Vsix</DisplayName>
     <Description xml:space="preserve">This is just a test diagnostic extension to see if I can remove the debugger step through attribute using a code fixer.</Description>
     <MoreInfo>https://github.com/tiesmaster/DebuggerStepThroughRemover</MoreInfo>
-    <License>MIT</License>
+    <License>LICENSE</License>
     <Tags>test,DebuggerStepThroughAttribute</Tags>
   </Metadata>
   <Installation>
