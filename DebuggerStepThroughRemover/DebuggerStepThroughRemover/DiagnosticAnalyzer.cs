@@ -11,9 +11,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace DebuggerStepThroughRemover
 {
-    // TODO: add ReSharper solution file with default setttings of resharper/C#
-    // ReSharper disable InconsistentNaming
-
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class DebuggerStepThroughRemoverAnalyzer : DiagnosticAnalyzer
     {
