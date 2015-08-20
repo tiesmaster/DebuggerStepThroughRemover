@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="DebuggerStepThroughRemover.Vsix.Coolblue.5b4bbfbd-d0bf-4681-b874-fccec1cbe1d8" Version="1.0" Language="en-US" Publisher="Thijs Brobbel"/>
+    <Identity Id="DebuggerStepThroughRemover.Vsix.Tiesmaster.5b4bbfbd-d0bf-4681-b874-fccec1cbe1d8" Version="1.0" Language="en-US" Publisher="Thijs Brobbel"/>
     <DisplayName>DebuggerStepThroughRemover.Vsix</DisplayName>
     <Description xml:space="preserve">This is just a test diagnostic extension to see if I can remove the debugger step through attribute using a code fixer.</Description>
     <MoreInfo>https://github.com/tiesmaster/DebuggerStepThroughRemover</MoreInfo>

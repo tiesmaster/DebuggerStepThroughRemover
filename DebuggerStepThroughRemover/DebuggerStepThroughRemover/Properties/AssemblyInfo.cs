@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("DebuggerStepThroughRemover")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Coolblue")]
+[assembly: AssemblyCompany("Tiesmaster")]
 [assembly: AssemblyProduct("DebuggerStepThroughRemover")]
-[assembly: AssemblyCopyright("Copyright © Coolblue 2015")]
+[assembly: AssemblyCopyright("Copyright © Thijs Brobbel 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
