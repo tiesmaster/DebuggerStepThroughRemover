@@ -4,6 +4,8 @@ branches:
   - master
 os: Visual Studio 2015
 configuration: Release
+cache:
+  - packages -> **\packages.config
 install:
 - ps: (new-object Net.WebClient).DownloadString("https://raw.github.com/madskristensen/ExtensionScripts/master/AppVeyor/vsix.ps1") | iex
 build_script:
