@@ -1,6 +1,5 @@
 # DebuggerStepThroughRemover
 
-[![Join the chat at https://gitter.im/tiesmaster/DebuggerStepThroughRemover](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/tiesmaster/DebuggerStepThroughRemover?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 This is just a test diagnostic extension to see if I can remove the debugger step through attribute using a code fixer.
 
 # Build Status
