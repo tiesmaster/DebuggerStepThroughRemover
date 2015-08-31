@@ -16,13 +16,9 @@ namespace DebuggerStepThroughRemover
     {
         public const string DiagnosticId = "DebuggerStepThroughRemover";
 
-        // TODO: change type to string
-
-        private static readonly LocalizableString Title =
-            "Type is decorated with DebuggerStepThrough attribute";
-        private static readonly LocalizableString MessageFormat =
-            "Type '{0}' is decorated with DebuggerStepThrough attribute";
-        private static readonly LocalizableString Description = "";
+        private static readonly string Title = "Type is decorated with DebuggerStepThrough attribute";
+        private static readonly string MessageFormat = "Type '{0}' is decorated with DebuggerStepThrough attribute";
+        private static readonly string Description = "";
         private const string Category = "Debugging";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
