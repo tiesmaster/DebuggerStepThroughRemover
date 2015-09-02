@@ -1,7 +1,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -34,34 +33,11 @@ namespace DebuggerStepThroughRemover
         private static void AnalyzeAttributeNode(SyntaxNodeAnalysisContext context)
         {
             var attributeNode = (AttributeSyntax)context.Node;
-            var model = context.SemanticModel;
-            var attributeClassSymbol = GetAttributeClassSymbolFromModel(model, attributeNode);
-            var debuggerStepThroughAttributeSymbol = GetDebuggerStepThroughAttributeSymbol(model);
-            if (debuggerStepThroughAttributeSymbol.Equals(attributeClassSymbol))
+            var symbol = context.SemanticModel.GetSymbolInfo(attributeNode).Symbol;
+            if (symbol.ContainingType.MetadataName == typeof(DebuggerStepThroughAttribute).Name)
             {
                 ReportDiagnostic(context, attributeNode);
             }
-        }
-
-        private static INamedTypeSymbol GetDebuggerStepThroughAttributeSymbol(SemanticModel model)
-        {
-            var debuggerStepThroughAttributeType = typeof (DebuggerStepThroughAttribute);
-            var mscorlib = GetMscorlib(model, debuggerStepThroughAttributeType.GetTypeInfo().Assembly);
-            var assemblySymbol = (IAssemblySymbol) model.Compilation.GetAssemblyOrModuleSymbol(mscorlib);
-            return assemblySymbol.GetTypeByMetadataName(debuggerStepThroughAttributeType.FullName);
-        }
-
-        private static MetadataReference GetMscorlib(SemanticModel model, Assembly mscorlibAssembly)
-        {
-            var mscorlibAssemblyName = mscorlibAssembly.GetName().Name;
-            return model.Compilation.References.Single(x => x.Display.Contains(mscorlibAssemblyName));
-        }
-
-        private static ITypeSymbol GetAttributeClassSymbolFromModel(SemanticModel model, AttributeSyntax attributeNode)
-        {
-            var attributeSymbolInfo = model.GetSymbolInfo(attributeNode);
-            var constructorSymbol = (IMethodSymbol) attributeSymbolInfo.Symbol;
-            return constructorSymbol.ReceiverType;
         }
 
         private static void ReportDiagnostic(SyntaxNodeAnalysisContext context, AttributeSyntax matchingNode)
