@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -29,24 +28,19 @@ namespace DebuggerStepThroughRemover
 
         public override void Initialize(AnalysisContext context)
         {
-            context.RegisterSemanticModelAction(AnalyzeSemanticModel);
+            context.RegisterSyntaxNodeAction(AnalyzeAttributeNode, SyntaxKind.Attribute);
         }
 
-        private static void AnalyzeSemanticModel(SemanticModelAnalysisContext context)
+        private static void AnalyzeAttributeNode(SyntaxNodeAnalysisContext context)
         {
+            var attributeNode = (AttributeSyntax)context.Node;
             var model = context.SemanticModel;
+            var attributeClassSymbol = GetAttributeClassSymbolFromModel(model, attributeNode);
             var debuggerStepThroughAttributeSymbol = GetDebuggerStepThroughAttributeSymbol(model);
-            var matchingAttributes = FindMatchingNodes(model, debuggerStepThroughAttributeSymbol);
-            CreateDiagnosticsFromMatchingNodes(context, matchingAttributes);
-        }
-
-        private static IEnumerable<AttributeSyntax> FindMatchingNodes(SemanticModel model, INamedTypeSymbol debuggerStepThroughAttributeSymbol)
-        {
-            return
-                from attributeNode in GetAllAttributeNodesInModel(model)
-                let attributeClassSymbol = GetAttributeClassSymbolFromModel(model, attributeNode)
-                where debuggerStepThroughAttributeSymbol.Equals(attributeClassSymbol)
-                select attributeNode;
+            if (debuggerStepThroughAttributeSymbol.Equals(attributeClassSymbol))
+            {
+                ReportDiagnostic(context, attributeNode);
+            }
         }
 
         private static INamedTypeSymbol GetDebuggerStepThroughAttributeSymbol(SemanticModel model)
@@ -63,12 +57,6 @@ namespace DebuggerStepThroughRemover
             return model.Compilation.References.Single(x => x.Display.Contains(mscorlibAssemblyName));
         }
 
-        private static IEnumerable<AttributeSyntax> GetAllAttributeNodesInModel(SemanticModel model)
-        {
-            var syntaxRoot = model.SyntaxTree.GetRoot();
-            return syntaxRoot.DescendantNodes().OfType<AttributeSyntax>();
-        }
-
         private static ITypeSymbol GetAttributeClassSymbolFromModel(SemanticModel model, AttributeSyntax attributeNode)
         {
             var attributeSymbolInfo = model.GetSymbolInfo(attributeNode);
@@ -76,15 +64,7 @@ namespace DebuggerStepThroughRemover
             return constructorSymbol.ReceiverType;
         }
 
-        private static void CreateDiagnosticsFromMatchingNodes(SemanticModelAnalysisContext context, IEnumerable<AttributeSyntax> matchingNodes)
-        {
-            foreach (var matchingNode in matchingNodes)
-            {
-                ReportDiagnostic(context, matchingNode);
-            }
-        }
-
-        private static void ReportDiagnostic(SemanticModelAnalysisContext context, AttributeSyntax matchingNode)
+        private static void ReportDiagnostic(SyntaxNodeAnalysisContext context, AttributeSyntax matchingNode)
         {
             context.ReportDiagnostic(
                 Diagnostic.Create(Rule,
