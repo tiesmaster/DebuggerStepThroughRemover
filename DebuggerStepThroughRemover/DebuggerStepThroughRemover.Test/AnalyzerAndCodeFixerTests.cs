@@ -2,19 +2,19 @@
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
-using TestHelper;
+using RoslynTester.DiagnosticResults;
 
 using Xunit;
 
 namespace DebuggerStepThroughRemover.Test
 {
-    public class AnalyzerAndCodeFixerTests : CodeFixVerifier
+    public class AnalyzerAndCodeFixerTests : RoslynTester.Helpers.CSharp.CSharpCodeFixVerifier // CodeFixVerifier
     {
         [Fact]
         public void WithEmptySourceFile_ShouldNotFindAnything()
         {
             var test = @"";
-            VerifyCSharpDiagnostic(test);
+            VerifyDiagnostic(test);
         }
 
         [Theory]
@@ -32,14 +32,14 @@ namespace DebuggerStepThroughRemover.Test
                             new DiagnosticResultLocation("Test0.cs", expectedLocation.Line, expectedLocation.Character)
                         }
             };
-            VerifyCSharpDiagnostic(testData.BrokenSource, expected);
+            VerifyDiagnostic(testData.BrokenSource, expected);
         }
 
         [Theory]
         [MemberData(nameof(TestData))]
         public void CodeFixer_WithTestData_ShouldFixSource(TestData testData)
         {
-            VerifyCSharpFix(testData.BrokenSource, testData.ExpectedFixedSource, null, allowNewCompilerDiagnostics: true);
+            VerifyFix(testData.BrokenSource, testData.ExpectedFixedSource, null, allowNewCompilerDiagnostics: true);
         }
 
         // ReSharper disable once MemberCanBePrivate.Global
@@ -134,14 +134,7 @@ namespace ConsoleApplication1
     }
 }", ExpectedDiagnositicLocation = new LinePosition(7, 16)}};
 
-        protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
-        {
-            return new DebuggerStepThroughRemoverAnalyzer();
-        }
-
-        protected override CodeFixProvider GetCSharpCodeFixProvider()
-        {
-            return new DebuggerStepThroughRemoverCodeFixProvider();
-        }
+        protected override DiagnosticAnalyzer DiagnosticAnalyzer { get; } = new DebuggerStepThroughRemoverAnalyzer();
+        protected override CodeFixProvider CodeFixProvider { get; } = new DebuggerStepThroughRemoverCodeFixProvider();
     }
 }
